@@ -12,5 +12,7 @@ public interface AutorRepository extends JpaRepository<Autor, Long> {
     @Query("SELECT a FROM Autor a WHERE :año BETWEEN a.anioDeNacimiento AND a.anioDeFallecimiento")
     List<Autor> filtrarAutorvivoporAño(@Param("año") int año);
 
-    Optional<Autor> findByFechaNacimiento(int fechaNacimiento);
+    Optional<Autor> findByAnioDeNacimiento(Integer anioDeNacimiento);
+
+    List<Autor> findByAnioDeNacimientoBetween(Integer startYear, Integer endYear);
 }
