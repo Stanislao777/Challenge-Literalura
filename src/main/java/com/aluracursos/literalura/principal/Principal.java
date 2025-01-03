@@ -1,34 +1,22 @@
 package com.aluracursos.literalura.principal;
 
-import com.aluracursos.literalura.model.Autor;
+import com.aluracursos.literalura.model.Datos;
+import com.aluracursos.literalura.model.DatosAutor;
 import com.aluracursos.literalura.model.DatosLibro;
-import com.aluracursos.literalura.model.Libro;
-import com.aluracursos.literalura.repository.AutorRepository;
-import com.aluracursos.literalura.repository.LibroRepository;
 import com.aluracursos.literalura.service.ConsumoAPI;
 import com.aluracursos.literalura.service.ConvierteDatos;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner teclado = new Scanner(System.in);
     private ConsumoAPI consumoApi = new ConsumoAPI();
     private final String URL_BASE = "https://gutendex.com/books/?t=";
     private ConvierteDatos conversor = new ConvierteDatos();
-
     private List<DatosLibro> datosLibros = new ArrayList<>();
 
-    private LibroRepository libroRepositorio;
-    private AutorRepository autorRepositorio;
 
-    public Principal(LibroRepository libroRepository, AutorRepository autorRepository) {
-        this.libroRepositorio = libroRepository;
-        this.autorRepositorio = autorRepository;
-    }
-
-
-    private List<Libro> libros;
-    private List<Autor> autores;
 
     public void muestraElMenu() {
         var opcion = -1;
@@ -53,7 +41,7 @@ public class Principal {
                     buscarLibro();
                     break;
                 case 2:
-                    System.out.println("Hola 2\n");
+                    //ListarlibrosRegistrados();
                     break;
                 case 3:
                     System.out.println("Hola 3\n");
@@ -74,22 +62,35 @@ public class Principal {
         }
     }
 
-    private DatosLibro getDatosLibro() {
-        System.out.println("Ingrese el nombre del libro que desea buscar");
-        var nombreLibro = teclado.nextLine();
-        var json = consumoApi.obtenerDatos(URL_BASE + nombreLibro);
-        System.out.println(json);
-        DatosLibro datos = conversor.obtenerDatos(json, DatosLibro.class);
-        return datos;
-    }
-
     private void buscarLibro() {
-        DatosLibro datos = getDatosLibro();
-        datosLibros.add(datos);
-        System.out.println(datos);
-    }
+        System.out.println("Ingrese el nombre del libro que desea buscar:");
+        var tituloLibro = teclado.nextLine();
 
-    private void mostrarLibrosBuscados(){
-        datosLibros.forEach(System.out::println);
+        String json = consumoApi.obtenerDatos(URL_BASE + "?search=" + tituloLibro.replace(" ", "+"));
+        Datos datos = conversor.obtenerDatos(json, Datos.class);
+
+        if (datos != null && datos.resultados() != null && !datos.resultados().isEmpty()) {
+            boolean libroEncontrado = false;
+
+            for (DatosLibro libroBuscado : datos.resultados()) {
+                if (libroBuscado.titulo().toUpperCase().contains(tituloLibro.toUpperCase())) {
+                    libroEncontrado = true;
+                    System.out.println("----- LIBRO -----");
+                    System.out.println("Título: " + libroBuscado.titulo());
+                    System.out.println("Autor: " + libroBuscado.autor().stream()
+                                                .map(DatosAutor::nombre)
+                                                .collect(Collectors.joining(", ")));
+                    System.out.println("Idioma: " + String.join(", ", libroBuscado.idiomas()));
+                    System.out.println("Número de descargas: " + libroBuscado.numeroDeDescargas());
+                    System.out.println("------------------\n");
+                }
+            }
+
+            if (!libroEncontrado) {
+                System.out.println("Libro no encontrado\n");
+            }
+        } else {
+            System.out.println("Libro no encontrado\n");
+        }
     }
 }
