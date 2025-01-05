@@ -10,32 +10,34 @@ public class Libro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
     @Column(unique = true)
     private String titulo;
-    private String autor;
+
     private String idioma;
     private Double numeroDeDescargas;
 
-    @Transient
-    private List<Autor> autores;
+    @ManyToOne  // Relación muchos a uno, un libro tiene un solo autor
+    @JoinColumn(name = "autor_id")  // Especifica la columna en la tabla de libros que apunta al autor
+    private Autor autor;  // Aquí almacenamos solo un autor
 
     public Libro() {}
 
-    public Libro(String titulo, String autor, String idioma, Double numeroDeDescargas) {
+    // Constructor que recibe los datos necesarios, incluyendo el autor
+    public Libro(String titulo, String idioma, Double numeroDeDescargas, Autor autor) {
         this.titulo = titulo;
-        this.autor = autor;
         this.idioma = idioma;
         this.numeroDeDescargas = numeroDeDescargas;
+        this.autor = autor;  // Asignamos el autor
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public String getTitulo() {
@@ -44,14 +46,6 @@ public class Libro {
 
     public void setTitulo(String titulo) {
         this.titulo = titulo;
-    }
-
-    public String getAutor() {
-        return autor;
-    }
-
-    public void setAutor(String autor) {
-        this.autor = autor;
     }
 
     public String getIdioma() {
@@ -70,12 +64,12 @@ public class Libro {
         this.numeroDeDescargas = numeroDeDescargas;
     }
 
-    public List<Autor> getAutores() {
-        return autores;
+    public Autor getAutor() {
+        return autor;
     }
 
-    public void setAutores(List<Autor> autores) {
-        this.autores = autores;
+    public void setAutor(Autor autor) {
+        this.autor = autor;
     }
 }
 
