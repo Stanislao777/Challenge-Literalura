@@ -18,14 +18,13 @@ public class Principal {
     private ConsumoAPI consumoApi = new ConsumoAPI();
     private final String URL_BASE = "https://gutendex.com/books/?t=";
     private ConvierteDatos conversor = new ConvierteDatos();
-    private List<DatosLibro> datosLibros = new ArrayList<>();
 
-    private LibroRepository repositorio;
+    private LibroRepository repositorioLibro;
     private AutorRepository repositorioAutor;
 
     @Autowired
-    public Principal(LibroRepository repository, AutorRepository repositorioAutor) {
-        this.repositorio = repository;
+    public Principal(LibroRepository repositorioLibro, AutorRepository repositorioAutor) {
+        this.repositorioLibro = repositorioLibro;
         this.repositorioAutor = repositorioAutor;
     }
 
@@ -55,16 +54,15 @@ public class Principal {
                 continue;  // Volvemos a mostrar el menú
             }
 
-            // Ahora procesamos la opción válida
             switch (opcion) {
                 case 1:
-                    buscarLibro();  // Llamamos a buscarLibro() que maneja la lógica de búsqueda y registro
+                    buscarLibro();
                     break;
                 case 2:
                     ListarlibrosRegistrados();
                     break;
                 case 3:
-                    System.out.println("Hola 3\n");
+                    //ListarAutoresRegistrados();
                     break;
                 case 4:
                     System.out.println("Hola 4\n");
@@ -97,7 +95,7 @@ public class Principal {
                 if (libroBuscado.titulo().toUpperCase().contains(tituloLibro.toUpperCase())) {
 
                     // Verifica si el libro ya está registrado en la base de datos
-                    Optional<Libro> libroEnApiExistente = repositorio.findByTitulo(libroBuscado.titulo());
+                    Optional<Libro> libroEnApiExistente = repositorioLibro.findByTitulo(libroBuscado.titulo());
                     if (libroEnApiExistente.isPresent()) {
                         // Si el libro ya está registrado, mostramos el mensaje y terminamos la búsqueda
                         System.out.println("No se puede registrar el mismo libro más de una vez.\n");
@@ -149,7 +147,7 @@ public class Principal {
                                     autor  // Asignamos el autor encontrado o creado
                             );
 
-                            repositorio.save(libro);  // Guardamos el libro en la base de datos
+                            repositorioLibro.save(libro);  // Guardamos el libro en la base de datos
                             System.out.println("Libro guardado en la base de datos.\n");
                         }
 
@@ -162,15 +160,34 @@ public class Principal {
                 System.out.println("\nLibro no encontrado\n");
             }
         } else {
-            System.out.println("No se encontraron resultados en la API externa.\n");
+            System.out.println("No se encontraron resultados en la API de gutendex.\n");
         }
     }
 
-    public void ListarlibrosRegistrados() {
-        List<Libro> libros = repositorio.findAll();
+    private void ListarlibrosRegistrados() {
+        // Obtener todos los libros de la base de datos
+        List<Libro> libros = repositorioLibro.findAll();
 
-        libros.stream()
-                .sorted(Comparator.comparing(Libro::getTitulo))
-                .forEach(System.out::println);
+        // Recorrer los libros y mostrar los detalles en el formato deseado
+        for (Libro libro : libros) {
+            System.out.println("----- LIBRO -----");
+            System.out.println("Título: " + libro.getTitulo());
+
+            // Accede al autor del libro y muestra el nombre
+            if (libro.getAutor() != null) {  // Asegúrate de que el autor no sea null
+                System.out.println("Autor: " + libro.getAutor().getNombre());
+            } else {
+                System.out.println("Autor: Desconocido");
+            }
+
+            // Mostrar el idioma
+            System.out.println("Idioma: " + libro.getIdioma());
+
+            // Mostrar el número de descargas
+            System.out.println("Número de descargas: " + libro.getNumeroDeDescargas());
+            System.out.println("------------------\n");
+        }
     }
+
+
 }

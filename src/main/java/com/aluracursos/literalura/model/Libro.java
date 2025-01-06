@@ -2,8 +2,6 @@ package com.aluracursos.literalura.model;
 
 import jakarta.persistence.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "libros")
 public class Libro {
@@ -14,6 +12,7 @@ public class Libro {
 
     @Column(unique = true)
     private String titulo;
+
 
     private String idioma;
     private Double numeroDeDescargas;

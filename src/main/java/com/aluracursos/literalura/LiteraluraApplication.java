@@ -1,7 +1,6 @@
 package com.aluracursos.literalura;
 
 import com.aluracursos.literalura.principal.Principal;
-import com.aluracursos.literalura.repository.LibroRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
