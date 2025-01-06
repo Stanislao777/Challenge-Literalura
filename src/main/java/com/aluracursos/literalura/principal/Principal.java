@@ -5,6 +5,7 @@ import com.aluracursos.literalura.repository.AutorRepository;
 import com.aluracursos.literalura.repository.LibroRepository;
 import com.aluracursos.literalura.service.ConsumoAPI;
 import com.aluracursos.literalura.service.ConvierteDatos;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 @Component
 public class Principal {
 
+    private final LibroRepository libroRepository;
     private Scanner teclado = new Scanner(System.in);
     private ConsumoAPI consumoApi = new ConsumoAPI();
     private final String URL_BASE = "https://gutendex.com/books/?t=";
@@ -23,9 +25,10 @@ public class Principal {
     private AutorRepository repositorioAutor;
 
     @Autowired
-    public Principal(LibroRepository repositorioLibro, AutorRepository repositorioAutor) {
+    public Principal(LibroRepository repositorioLibro, AutorRepository repositorioAutor, LibroRepository libroRepository) {
         this.repositorioLibro = repositorioLibro;
         this.repositorioAutor = repositorioAutor;
+        this.libroRepository = libroRepository;
     }
 
     public void muestraElMenu() {
@@ -62,13 +65,13 @@ public class Principal {
                     ListarlibrosRegistrados();
                     break;
                 case 3:
-                    //ListarAutoresRegistrados();
+                    ListarAutoresRegistrados();
                     break;
                 case 4:
-                    System.out.println("Hola 4\n");
+                    //ListarAutoresVivosEnDeterminadoAnio();
                     break;
                 case 5:
-                    System.out.println("Hola 5\n");
+                    //ListarLibrosPorIdioma();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...\n");
@@ -189,5 +192,35 @@ public class Principal {
         }
     }
 
+    private void ListarAutoresRegistrados() {
+        List<Autor> autores = repositorioAutor.findAll();
 
+        for (Autor autor : autores) {
+            System.out.println("\nNombre: " + autor.getNombre());
+            if (autor.getAnioNacimiento() != null) {
+                System.out.println("Fecha de nacimiento: " + autor.getAnioNacimiento());
+            } else {
+                System.out.println("Fecha de nacimiento: Desconocida \n");
+            }
+            if (autor.getAnioFallecimiento() != null) {
+                System.out.println("Fecha de fallecimiento: " + autor.getAnioFallecimiento());
+            } else {
+                System.out.println("Fecha de fallecimiento: Desconocida \n");
+            }
+
+            // Obtener los libros del autor
+            List<Libro> librosDelAutor = libroRepository.findByAutor(autor);  // Método que busca libros por autor
+            // Si el autor tiene libros, los mostramos
+            if (!librosDelAutor.isEmpty()) {
+                // Creamos una lista con los títulos de los libros
+                List<String> titulosLibros = librosDelAutor.stream()
+                        .map(Libro::getTitulo)
+                        .collect(Collectors.toList());
+
+                System.out.println("Libros: " + titulosLibros + "\n");
+            } else {
+                System.out.println("Libros: [Ninguno] \n");
+            }
+        }
+    }
 }
