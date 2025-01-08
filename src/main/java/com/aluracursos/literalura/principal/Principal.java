@@ -5,7 +5,6 @@ import com.aluracursos.literalura.repository.AutorRepository;
 import com.aluracursos.literalura.repository.LibroRepository;
 import com.aluracursos.literalura.service.ConsumoAPI;
 import com.aluracursos.literalura.service.ConvierteDatos;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +49,7 @@ public class Principal {
             // Intentamos leer una opción del menú
             try {
                 opcion = teclado.nextInt();  // Intentamos leer un número
+                teclado.nextLine();
             } catch (InputMismatchException e) {
                 // Si la entrada no es un número, mostramos un mensaje de error
                 System.out.println("Opción inválida. Por favor ingrese un número.");
@@ -68,7 +68,7 @@ public class Principal {
                     ListarAutoresRegistrados();
                     break;
                 case 4:
-                    //ListarAutoresVivosEnDeterminadoAnio();
+                    ListarAutoresVivosEnDeterminadoAnio();
                     break;
                 case 5:
                     //ListarLibrosPorIdioma();
@@ -209,7 +209,7 @@ public class Principal {
             }
 
             // Obtener los libros del autor
-            List<Libro> librosDelAutor = libroRepository.findByAutor(autor);  // Método que busca libros por autor
+            List<Libro> librosDelAutor = repositorioLibro.findByAutor(autor);  // Método que busca libros por autor
             // Si el autor tiene libros, los mostramos
             if (!librosDelAutor.isEmpty()) {
                 // Creamos una lista con los títulos de los libros
@@ -222,5 +222,72 @@ public class Principal {
                 System.out.println("Libros: [Ninguno] \n");
             }
         }
+    }
+
+    public void ListarAutoresVivosEnDeterminadoAnio() {
+        final int anio = obtenerAnioValido(teclado);
+
+        // Consultamos todos los autores registrados en la base de datos
+        List<Autor> autoresVivos = repositorioAutor.findAll()
+                .stream()
+                // Filtramos los autores que están vivos en el año proporcionado
+                .filter(autor -> esAutorVivoEnAnio(autor, anio))
+                .collect(Collectors.toList());;
+
+        // Verificamos si hay autores vivos en ese año y mostramos los resultados
+        if (autoresVivos.isEmpty()) {
+            System.out.println("No hay autores vivos en el año " + anio + ".");
+        } else {
+            System.out.println("\nEl autor(es) vivo(s) en el año " + anio + " son:");
+            for (Autor autor : autoresVivos) {
+                System.out.println("Autor: " + autor.getNombre());
+                System.out.println("Fecha de nacimiento: " + autor.getAnioNacimiento());
+                if (autor.getAnioFallecimiento() != null) {
+                    System.out.println("Fecha de fallecimiento: " + autor.getAnioFallecimiento());
+                } else {
+                    System.out.println("Fecha de fallecimiento: Desconocida (Aún vivo)");
+                }
+
+                // Mostrar los libros de ese autor(es)
+                List<Libro> librosDelAutor = libroRepository.findByAutorId(autor.getId());
+                if (librosDelAutor.isEmpty()) {
+                    System.out.println("Libros: Ninguno");
+                } else {
+                    System.out.println("Libros: ");
+                    for (Libro libro : librosDelAutor) {
+                        System.out.println(" - " + libro.getTitulo() + "\n");
+                    }
+                }
+            }
+        }
+    }
+
+    private int obtenerAnioValido(Scanner teclado) {
+        String input;
+        boolean esValido = false;
+        int anio = -1;
+
+        while (!esValido) {
+            System.out.print("\nIngrese el año vivo de autor(es) que desea buscar: \n");
+            input = teclado.nextLine();
+            System.out.println("El año ingresado es: " + input);
+
+            // Verificar si el input tiene exactamente 4 dígitos numéricos
+            if (input.matches("\\d{4}")) {
+                anio = Integer.parseInt(input); // Convertimos el String a un número
+                esValido = true; // Año válido, salimos del ciclo
+            } else {
+                System.out.println("Por favor ingrese un año válido con exactamente 4 dígitos numéricos.");
+            }
+        }
+        return anio;
+    }
+
+    // Método auxiliar para determinar si un autor está vivo en un determinado año
+    private boolean esAutorVivoEnAnio(Autor autor, int anio) {
+        /*El autor está vivo si su año de nacimiento es antes o igual al año
+        y su año de fallecimiento (si existe) es mayor o igual al año.*/
+        return autor.getAnioNacimiento() <= anio &&
+                (autor.getAnioFallecimiento() == null || autor.getAnioFallecimiento() >= anio);
     }
 }
