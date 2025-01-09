@@ -71,7 +71,7 @@ public class Principal {
                     ListarAutoresVivosEnDeterminadoAnio();
                     break;
                 case 5:
-                    //ListarLibrosPorIdioma();
+                    ListarLibrosPorIdioma();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...\n");
@@ -240,12 +240,12 @@ public class Principal {
         } else {
             System.out.println("\nEl autor(es) vivo(s) en el año " + anio + " son:");
             for (Autor autor : autoresVivos) {
-                System.out.println("Autor: " + autor.getNombre());
-                System.out.println("Fecha de nacimiento: " + autor.getAnioNacimiento());
+                System.out.println(" Autor: " + autor.getNombre());
+                System.out.println(" Fecha de nacimiento: " + autor.getAnioNacimiento());
                 if (autor.getAnioFallecimiento() != null) {
-                    System.out.println("Fecha de fallecimiento: " + autor.getAnioFallecimiento());
+                    System.out.println(" Fecha de fallecimiento: " + autor.getAnioFallecimiento());
                 } else {
-                    System.out.println("Fecha de fallecimiento: Desconocida (Aún vivo)");
+                    System.out.println(" Fecha de fallecimiento: Desconocida (Aún vivo)");
                 }
 
                 // Mostrar los libros de ese autor(es)
@@ -253,7 +253,7 @@ public class Principal {
                 if (librosDelAutor.isEmpty()) {
                     System.out.println("Libros: Ninguno");
                 } else {
-                    System.out.println("Libros: ");
+                    System.out.println(" Libros: ");
                     for (Libro libro : librosDelAutor) {
                         System.out.println(" - " + libro.getTitulo() + "\n");
                     }
@@ -289,5 +289,54 @@ public class Principal {
         y su año de fallecimiento (si existe) es mayor o igual al año.*/
         return autor.getAnioNacimiento() <= anio &&
                 (autor.getAnioFallecimiento() == null || autor.getAnioFallecimiento() >= anio);
+    }
+
+
+    private void ListarLibrosPorIdioma() {
+        System.out.print("""
+        Ingrese el idioma para buscar los libros (por ejemplo, 'es' para español):
+        es - español
+        en - inglés
+        fr - francés
+        pt - portugués
+        """);
+        String idioma = teclado.nextLine().trim();
+
+        // Traducir la abreviatura del idioma a su nombre completo
+        String nombreIdioma;
+        switch(idioma) {
+            case "es":
+                nombreIdioma = "Español";
+                break;
+            case "en":
+                nombreIdioma = "Inglés";
+                break;
+            case "fr":
+                nombreIdioma = "Francés";
+                break;
+            case "pt":
+                nombreIdioma = "Portugués";
+                break;
+            default:
+                nombreIdioma = "Idioma desconocido";
+                break;
+        }
+
+        // Consultar todos los libros que tienen el idioma especificado
+        List<Libro> librosPorIdioma = libroRepository.findByIdioma(idioma);
+
+        // Verificar si hay libros para ese idioma
+        if (librosPorIdioma.isEmpty()) {
+            System.out.println("No se encontraron libros en el idioma: " + nombreIdioma + "\n");
+        } else {
+            System.out.println("----- LIBROS EN " + nombreIdioma.toUpperCase() + " -----");
+            for (Libro libro : librosPorIdioma) {
+                System.out.println("Título: " + libro.getTitulo());
+                System.out.println("Autor: " + libro.getAutor().getNombre());
+                System.out.println("Idioma: " + libro.getIdioma());
+                System.out.println("Número de descargas: " + libro.getNumeroDeDescargas());
+                System.out.println("-------------------\n");
+            }
+        }
     }
 }
